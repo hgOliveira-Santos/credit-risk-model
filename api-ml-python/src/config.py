@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import json
 
 # URL do arquivo zip do German Credit Data
 GERMAN_CREDIT_ZIP_URL = "https://archive.ics.uci.edu/static/public/144/statlog+german+credit+data.zip"
@@ -81,3 +82,17 @@ CATEGORICAL_COLUMNS = [
 
 # Coluna target
 TARGET_COLUMN = 'risk'
+
+def _load_json_mappings():
+    """Carrega os mapeamentos do arquivo JSON"""
+    mappings_file = PROJECT_DIR / 'mappings.json'
+    try:
+        with open(mappings_file, 'r', encoding='utf-8') as f:
+            mappings = json.load(f)
+        return mappings
+    except FileNotFoundError:
+        # Se o arquivo não existir, retorna um dicionário vazio
+        print(f"AVISO: Arquivo {mappings_file} não encontrado. Retornando mapeamentos vazios.")
+        return {}
+
+MAPPINGS = _load_json_mappings()
