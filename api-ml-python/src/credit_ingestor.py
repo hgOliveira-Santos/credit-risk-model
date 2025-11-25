@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 import pandas as pd
 import requests
 import zipfile
@@ -22,6 +22,7 @@ class CreditDataIngestion:
         processed_data_dir: str = config.PROCESSED_DATA_DIR,
         data_filename: str = config.GERMAN_CREDIT_DATA,
         column_names: List = config.COLUMN_NAMES,
+        mappings: Dict = config.MAPPINGS,
     ):
         self.url = url
         self.raw_data_dir = raw_data_dir
@@ -29,6 +30,7 @@ class CreditDataIngestion:
         self.data_filename = data_filename
         self.processed_filepath = os.path.join(processed_data_dir, data_filename)
         self.column_names = column_names
+        self.mappings = mappings
 
         # Configuração do Logger
         self.logger = logging.getLogger(__name__)
@@ -49,12 +51,18 @@ class CreditDataIngestion:
         """
         self.logger.info(">>> INICIANDO O PIPELINE DE INGESTÃO DE DADOS <<<")
 
+        if mappings is None:
+            mappings = self.mappings
+
         if os.path.exists(self.processed_filepath) and not overwrite:
             self.logger.info(
                 f"Arquivo de dados já existe em '{self.processed_filepath}'. Pulando a ingestão."
             )
             self.logger.info("Carregando dados existentes...")
-            return self._load_data_file(self.processed_filepath, self.column_names)
+            df = self._load_data_file(self.processed_filepath, self.column_names)
+            if mappings:
+                df = self._apply_mappings(df, mappings)
+            return df
 
         try:
             download_success = self._download_zip_file(self.url, self.raw_data_dir)
