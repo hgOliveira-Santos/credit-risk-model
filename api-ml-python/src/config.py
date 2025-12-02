@@ -7,8 +7,11 @@ GERMAN_CREDIT_ZIP_URL = (
     "https://archive.ics.uci.edu/static/public/144/statlog+german+credit+data.zip"
 )
 
+# Nome do arquivo original
+GERMAN_DATA = "german.data"
+
 # Nome do arquivo .data que será salvo
-GERMAN_CREDIT_DATA = "credit_data.data"
+CREDIT_DATA = "credit_data.data"
 
 # --- Definição de Caminhos---
 PROJECT_DIR = Path(__file__).resolve().parent.parent
