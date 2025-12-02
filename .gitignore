@@ -1,102 +1,103 @@
-# Python
-.venv/
-venv/
-env/
-ENV/
-.env
-.ENV
+# ==============================================================================
+# GLOBAL / OS / IDEs
+# ==============================================================================
+# Windows
+Thumbs.db
+Desktop.ini
 
-# Python - Bytecode
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Arquivos de ambiente e segredos
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ==============================================================================
+# DATA SCIENCE & DVC (MLOps)
+# ==============================================================================
+# Ignorar dados crus e processados 
+/data/
+!/data/.gitkeep
+
+# Ignorar artefatos de modelos pesados 
+/models/
+!/models/.gitkeep
+
+# Ignorar checkpoints do Jupyter
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# ==============================================================================
+# PYTHON (Service: credit-risk-ml)
+# ==============================================================================
+# Bytecode
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
 
-# Python - Jupyter Notebooks
-.ipynb_checkpoints/
-*.ipynb_checkpoints
+# Ambientes Virtuais
+.venv/
+venv/
+env/
 
-# Notebooks
-notebooks/
-notebooks/*.ipynb
-notebooks/.ipynb_checkpoints/
-
-# Python - Distribution / packaging
+# Distribuição e Build
 build/
 dist/
 *.egg-info/
-*.egg
 .eggs/
 
-# Python - Data (mantém estrutura, ignora conteúdo)
-api-ml-python/data/raw/*
-api-ml-python/data/processed/*
-!api-ml-python/data/raw/.gitkeep
-!api-ml-python/data/processed/.gitkeep
+# Testes e Cobertura
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
 
-# Go
-# Binários compilados
+# Tipagem Estática e Linting
+.mypy_cache/
+.ruff_cache/
+
+# ==============================================================================
+# GO (Service: gateway-go)
+# ==============================================================================
+# Binários compilados 
+/services/gateway-go/bin/
+main
+server
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
-*.test
+
+# Testes
 *.out
-app-go/main
-app-go/credit-risk-model
+*.test
 
-# Go - Dependências
-app-go/vendor/
-
-# Node.js / Frontend
+# ==============================================================================
+# NODE / REACT (Service: web-frontend)
+# ==============================================================================
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
-.pnpm-debug.log*
 
-# Frontend - Build outputs
-dist/
-dist-ssr/
-build/
-*.local
+# Build de produção
+/services/web-frontend/dist/
+/services/web-frontend/build/
 
-# IDEs e Editores
-.vscode/
-!.vscode/extensions.json
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Testes de cobertura
+/services/web-frontend/coverage/
 
-# Logs
-logs/
-*.log
+# ==============================================================================
+# DOCKER & INFRA
+# ==============================================================================
 
-# Arquivos temporários
-*.tmp
-*.temp
-.cache/
-
-# Sistema Operacional
-Thumbs.db
-.DS_Store
-
-# Uploads
-backend/uploads/
-*.csv
-*.xlsx
-*.xls
-
-*.ps1
-*/data
+# Arquivos de override local do Docker Compose
+docker-compose.override.yml
