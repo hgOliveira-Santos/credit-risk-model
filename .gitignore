@@ -1,20 +1,102 @@
+# Python
 .venv/
+venv/
+env/
+ENV/
 .env
+.ENV
 
-data/
+# Python - Bytecode
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+*.so
+.Python
 
+# Python - Jupyter Notebooks
 .ipynb_checkpoints/
+*.ipynb_checkpoints
 
-.vscode/
-.idea/
+# Notebooks
+notebooks/
+notebooks/*.ipynb
+notebooks/.ipynb_checkpoints/
 
+# Python - Distribution / packaging
 build/
 dist/
 *.egg-info/
+*.egg
+.eggs/
 
-*.toml
-*.txt
+# Python - Data (mantém estrutura, ignora conteúdo)
+api-ml-python/data/raw/*
+api-ml-python/data/processed/*
+!api-ml-python/data/raw/.gitkeep
+!api-ml-python/data/processed/.gitkeep
+
+# Go
+# Binários compilados
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+app-go/main
+app-go/credit-risk-model
+
+# Go - Dependências
+app-go/vendor/
+
+# Node.js / Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Frontend - Build outputs
+dist/
+dist-ssr/
+build/
+*.local
+
+# IDEs e Editores
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+logs/
+*.log
+
+# Arquivos temporários
+*.tmp
+*.temp
+.cache/
+
+# Sistema Operacional
+Thumbs.db
+.DS_Store
+
+# Uploads
+backend/uploads/
+*.csv
+*.xlsx
+*.xls
+
+*.ps1
+*/data
