@@ -1,9 +1,23 @@
 import pandas as pd
+import joblib
+from pathlib import Path
+from typing import Any
 
-from src.config import CREDIT_DATA, PROCESSED_DATA_DIR
+def load_csv_data(filepath: Path) -> pd.DataFrame:
+    """Load a CSV file into a pandas DataFrame."""
+    try:
+        return pd.read_csv(filepath, encoding='utf-8')
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Data file not found at: {filepath}")
 
-FILE_PATH = PROCESSED_DATA_DIR / CREDIT_DATA
+def save_model(model: Any, filepath: Path) -> None:
+    """Save a model object to the specified filepath using joblib."""
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(model, filepath)
+    print(f"Model saved at: {filepath}")
 
-
-def load_credit_data(file_path: str = FILE_PATH) -> pd.DataFrame:
-    return pd.read_parquet(file_path)
+def load_model(filepath: Path) -> Any:
+    """Load a model object from the specified filepath."""
+    if not filepath.exists():
+        raise FileNotFoundError(f"Model not found at: {filepath}")
+    return joblib.load(filepath)
