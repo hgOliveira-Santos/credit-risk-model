@@ -33,6 +33,10 @@ Desktop.ini
 .ipynb_checkpoints/
 */.ipynb_checkpoints/
 
+# Ignorar notebooks e histórico de experimentação
+services/credit-risk-ml/notebooks
+services/credit-risk-ml/notebooks/.gitkeep
+
 # ==============================================================================
 # PYTHON (Service: credit-risk-ml)
 # ==============================================================================
