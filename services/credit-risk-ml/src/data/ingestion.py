@@ -1,21 +1,61 @@
-import zipfile
 import requests
+import zipfile
 from io import BytesIO
+from pathlib import Path
+from src.core.config import settings
 
-def download_dataset(url: str, csv_filename: str) -> BytesIO:
+
+def download_dataset(overwrite: bool = False) -> Path:
     """
-    Downloads a ZIP file from a given URL and returns the specified CSV file in memory (BytesIO).
+    Downloads the dataset from the UCI repository (ZIP), extracts the data file,
+    and saves it to the raw folder defined in the configuration.
+
+    Args:
+        overwrite (bool): If True, force download even if the file already exists.
+
+    Returns:
+        Path: Absolute path to the saved file.
     """
-    print(f"[EXTRACT] Downloading from {url} ...")
+    # Set the target path: data/raw/credit_data.data
+    output_path = settings.raw_data_dir / settings.CREDIT_DATA_FILENAME
+
+    # 1. Cache Check: If path exists, skip download unless overwrite is True
+    if output_path.exists() and not overwrite:
+        print(f"[CACHE] File already exists at: {output_path}")
+        return output_path
+
+    print(f"[INGESTION] Downloading data from {settings.DATA_SOURCE_URL} ...")
+
     try:
-        response = requests.get(url, timeout=60, stream=True)
+        # Ensure the data/raw directory exists
+        settings.raw_data_dir.mkdir(parents=True, exist_ok=True)
+
+        # 2. Download ZIP to memory
+        response = requests.get(settings.DATA_SOURCE_URL, timeout=60)
         response.raise_for_status()
-        zip_bytes = BytesIO(response.content)
-        with zipfile.ZipFile(zip_bytes) as archive:
-            with archive.open(csv_filename) as csvfile:
-                csv_buffer = BytesIO(csvfile.read())
-        print(f"[OK] CSV '{csv_filename}' loaded into memory.")
-        return csv_buffer
+        zip_buffer = BytesIO(response.content)
+
+        # 3. Extract and Save the data file
+        with zipfile.ZipFile(zip_buffer) as archive:
+            if settings.GERMAN_DATA_FILENAME not in archive.namelist():
+                raise FileNotFoundError(
+                    f"File '{settings.GERMAN_DATA_FILENAME}' not found inside ZIP."
+                )
+
+            print(f"[INGESTION] Extracting '{settings.GERMAN_DATA_FILENAME}'...")
+
+            with archive.open(settings.GERMAN_DATA_FILENAME) as source, open(
+                output_path, "wb"
+            ) as target:
+                target.write(source.read())
+
+        print(f"[OK] Dataset successfully saved at: {output_path}")
+        return output_path
+
     except Exception as e:
-        print(f"[ERROR] Failed to download or extract: {e}")
+        print(f"[ERROR] Data ingestion failed: {e}")
         raise e
+
+
+if __name__ == "__main__":
+    download_dataset(overwrite=True)
