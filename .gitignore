@@ -19,23 +19,23 @@ Desktop.ini
 *.key
 
 # ==============================================================================
-# DATA SCIENCE & DVC (MLOps)
+# DATA DIRS
 # ==============================================================================
-# Ignorar dados crus e processados 
-/data/
+# Ignore all data except for .gitkeep markers
+services/credit-risk-ml/data/*
 !/data/.gitkeep
 
-# Ignorar artefatos de modelos pesados 
-/models/
+# Ignore all model files except for .gitkeep markers
+/models/**
 !/models/.gitkeep
 
-# Ignorar checkpoints do Jupyter
+# Ignore checkpoints do Jupyter
 .ipynb_checkpoints/
 */.ipynb_checkpoints/
 
-# Ignorar notebooks e histórico de experimentação
-services/credit-risk-ml/notebooks
-services/credit-risk-ml/notebooks/.gitkeep
+# Ignore notebooks and experiment history (keep .gitkeep)
+/services/credit-risk-ml/notebooks
+/services/credit-risk-ml/notebooks/.gitkeep
 
 # ==============================================================================
 # PYTHON (Service: credit-risk-ml)
@@ -105,3 +105,9 @@ pnpm-debug.log*
 
 # Arquivos de override local do Docker Compose
 docker-compose.override.yml
+
+# ==============================================================================
+# SCRIPTS
+# ==============================================================================
+# Ignore PowerShell scripts
+*.ps1
