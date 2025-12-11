@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from typing import Dict, List, Any
-from pydantic import computed_field
+from pydantic import computed_field, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # ==============================================================================
@@ -72,7 +72,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Credit Risk ML Service"
 
     # Required URL
-    DATA_SOURCE_URL: str
+    DATA_SOURCE_URL: str = Field(..., env="DATA_SOURCE_URL")
 
     # Default Filenames
     GERMAN_DATA_FILENAME: str = "german.data"
