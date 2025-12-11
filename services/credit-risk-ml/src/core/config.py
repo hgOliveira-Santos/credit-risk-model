@@ -1,11 +1,11 @@
 import json
 from pathlib import Path
 from typing import Dict, List, Any
-from pydantic import computed_field, Field
+from pydantic import computed_field, Field  
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # ==============================================================================
-# 1. DOMAIN CONSTANTS (Static Business Rules)
+# 1. DOMAIN CONSTANTS
 # ==============================================================================
 
 # Rename columns according to documentation
