@@ -26,7 +26,8 @@ services/credit-risk-ml/data/*
 !/data/.gitkeep
 
 # Ignore all model files except for .gitkeep markers
-/models/**
+
+services/credit-risk-ml/models/**
 !/models/.gitkeep
 
 # Ignore checkpoints do Jupyter
