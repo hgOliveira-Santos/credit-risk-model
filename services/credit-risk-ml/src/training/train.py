@@ -67,7 +67,7 @@ def train_model():
     logger.info("ROC-AUC Score: %.4f", auc)
     logger.info("="*40)
 
-    # Save metrics as JSON for MLOps (addition)
+    # Save metrics as JSON for MLOps
     report_dict = classification_report(y_test, y_pred, output_dict=True)
     metrics = {
         "accuracy": report_dict["accuracy"],
@@ -76,7 +76,12 @@ def train_model():
         "f1_bad": report_dict["1"]["f1-score"],
         "roc_auc": auc
     }
-    metrics_path = settings.root_dir / "metrics.json"
+
+    reports_dir = settings.root_dir / "reports"
+    reports_dir.mkdir(exist_ok=True)
+
+    metrics_path = reports_dir / "metrics.json"
+    
     with open(metrics_path, "w") as f:
         json.dump(metrics, f, indent=4)
     logger.info("[TRAIN] Metrics saved at: %s", metrics_path)
