@@ -105,6 +105,18 @@ LOG_TRANSFORMER_FEATURES: List[str] = ["credit_amount"]
 MODEL_FEATURES: List[str] = MODEL_NUMERIC_COLUMNS + MODEL_CATEGORICAL_COLUMNS
 
 # ------------------------------------------------------------------------------
+# BUSINESS RULES (Risk Thresholds)
+# ------------------------------------------------------------------------------
+
+# If the risk probability is below 0.35, it is considered safe.
+RISK_THRESHOLD_LOW = 0.35
+
+# If the risk probability is above 0.75, it is considered dangerous.
+RISK_THRESHOLD_HIGH = 0.75
+
+# Between these values, the risk is "Medium".
+
+# ------------------------------------------------------------------------------
 # HYPERPARAMETERS
 # ------------------------------------------------------------------------------
 # Global random state for reproducibility.
