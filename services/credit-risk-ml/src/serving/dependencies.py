@@ -1,6 +1,6 @@
 from functools import lru_cache
 from typing import Any
-import logger
+from loguru import logger
 
 from src.core.config import settings
 from src.data.io import load_model
