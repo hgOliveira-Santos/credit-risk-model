@@ -1,17 +1,14 @@
 import json
-import logging
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, roc_auc_score
+from loguru import logger
 
 from src.core.config import settings, TARGET_COLUMN
 from src.data.ingestion import download_dataset
 from src.data.io import load_raw_data, save_model
 from src.features.pipeline import create_full_pipeline
-
-logger = logging.getLogger("credit-risk-ml.train")
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s - %(message)s")
 
 def train_model():
     logger.info("[TRAIN] Starting training process...")

@@ -2,6 +2,8 @@ import requests
 import zipfile
 from io import BytesIO
 from pathlib import Path
+from loguru import logger
+
 from src.core.config import settings
 
 
@@ -21,10 +23,10 @@ def download_dataset(overwrite: bool = False) -> Path:
 
     # 1. Cache Check: If path exists, skip download unless overwrite is True
     if output_path.exists() and not overwrite:
-        print(f"[CACHE] File already exists at: {output_path}")
+        logger.info(f"[INGESTION] File already exists at: {output_path}")
         return output_path
 
-    print(f"[INGESTION] Downloading data from {settings.DATA_SOURCE_URL} ...")
+    logger.info(f"[INGESTION] Downloading data from {settings.DATA_SOURCE_URL} ...")
 
     try:
         # Ensure the data/raw directory exists
@@ -42,18 +44,18 @@ def download_dataset(overwrite: bool = False) -> Path:
                     f"File '{settings.GERMAN_DATA_FILENAME}' not found inside ZIP."
                 )
 
-            print(f"[INGESTION] Extracting '{settings.GERMAN_DATA_FILENAME}'...")
+            logger.info(f"[INGESTION] Extracting '{settings.GERMAN_DATA_FILENAME}'...")
 
             with archive.open(settings.GERMAN_DATA_FILENAME) as source, open(
                 output_path, "wb"
             ) as target:
                 target.write(source.read())
 
-        print(f"[OK] Dataset successfully saved at: {output_path}")
+        logger.success(f"[INGESTION] Dataset successfully saved at: {output_path}")
         return output_path
 
     except Exception as e:
-        print(f"[ERROR] Data ingestion failed: {e}")
+        logger.error(f"[INGESTION] Data ingestion failed: {e}")
         raise e
 
 

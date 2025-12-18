@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Dict, List, Any
 from pydantic import computed_field, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from loguru import logger
 
 # ==============================================================================
 # 1. DOMAIN CONSTANTS
@@ -230,14 +231,14 @@ class Settings(BaseSettings):
         mappings_file = self.assets_dir / "mappings.json"
 
         if not mappings_file.exists():
-            print(f"WARNING: File {mappings_file} not found. Returning empty dict.")
+            logger.warning(f"[CONFIG] File {mappings_file} not found. Returning empty dict.")
             return {}
 
         try:
             with open(mappings_file, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception as e:
-            print(f"ERROR: Failed to read {mappings_file}: {e}")
+            logger.error(f"[CONFIG] Failed to read {mappings_file}: {e}")
             return {}
 
 # ==============================================================================

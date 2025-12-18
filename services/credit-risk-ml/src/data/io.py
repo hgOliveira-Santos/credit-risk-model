@@ -1,8 +1,9 @@
 import pandas as pd
-
 import joblib
 from pathlib import Path
 from typing import Any
+from loguru import logger
+
 from src.core.config import COLUMN_NAMES
 
 
@@ -23,7 +24,7 @@ def load_raw_data(filepath: Path) -> pd.DataFrame:
         df = pd.read_csv(
             filepath, sep=" ", header=None, names=COLUMN_NAMES, encoding="utf-8"
         )
-        print(f"[IO] Data loaded. Shape: {df.shape}")
+        logger.info(f"[IO] Data loaded. Shape: {df.shape}")
         return df
     except pd.errors.EmptyDataError:
         raise ValueError(f"No data found in file: {filepath}")
@@ -40,13 +41,13 @@ def save_model(model: Any, filepath: Path) -> None:
     try:
         filepath.parent.mkdir(parents=True, exist_ok=True)
     except Exception as e:
-        print(f"[IO] Error creating directory for model: {e}")
+        logger.error(f"[IO] Error creating directory for model: {e}")
         raise e
     try:
         joblib.dump(model, filepath)
-        print(f"[IO] Model saved at: {filepath}")
+        logger.success(f"[IO] Model saved at: {filepath}")
     except Exception as e:
-        print(f"[IO] Error saving model: {e}")
+        logger.error(f"[IO] Error saving model: {e}")
         raise e
 
 
@@ -63,5 +64,5 @@ def load_model(filepath: Path) -> Any:
     except FileNotFoundError:
         raise FileNotFoundError(f"Model file not found at: {filepath}")
     except Exception as e:
-        print(f"[IO] Error loading model: {e}")
+        logger.error(f"[IO] Error loading model: {e}")
         raise Exception(f"Error loading model: {e}")
