@@ -1,46 +1,27 @@
-# main.py
 from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
-
-
-# Model de entrada
-class PredictRequest(BaseModel):
-    age: int
-    credit_amount: float
-    duration: int
+from src.core.config import settings
+from src.serving.routers import prediction, health
 
 
-# Model de saída
-class PredictResponse(BaseModel):
-    risk: str
-    probability: float
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    description="API for credit risk analysis based on Random Forest",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(health.router, prefix="/api/v1")
+app.include_router(prediction.router, prefix="/api/v1")
 
 
-@app.post("/predict")
-def predict(request: PredictRequest) -> PredictResponse:
-
-    def _test_predict():
-
-        age_factor = max(0, min(1, (request.age - 18) / 50))
-        amount_factor = max(0, min(1, request.credit_amount / 10000))
-        duration_factor = max(0, min(1, request.duration / 60))
-
-        risk_score = (
-            amount_factor * 0.4 + duration_factor * 0.3 + (1 - age_factor) * 0.3
-        )
-        probability = max(0.1, min(0.99, risk_score))
-
-        risk = "bad" if probability > 0.6 else "good"
-
-        return risk, probability
-
-    risk, probability = _test_predict()
-
-    return PredictResponse(risk=risk, probability=round(probability, 2))
-
-
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("src.serving.main:app", host="0.0.0.0", port=8000, reload=True)
