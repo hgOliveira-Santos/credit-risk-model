@@ -1,152 +1,36 @@
 import json
 from pathlib import Path
-from typing import Dict, List, Any
-from pydantic import computed_field, Field
+from typing import Dict, Any
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from loguru import logger
 
-# ==============================================================================
-# 1. DOMAIN CONSTANTS
-# ==============================================================================
+from src.core.paths import get_project_paths
 
-# ------------------------------------------------------------------------------
-# COLUMN_NAMES
-# ------------------------------------------------------------------------------
-# List of all column names in the raw dataset, ordered as per the official documentation.
-COLUMN_NAMES: List[str] = [
-    "checking_account_status",
-    "duration_in_month",
-    "credit_history",
-    "purpose",
-    "credit_amount",
-    "savings_account_bonds",
-    "present_employment_since",
-    "installment_rate_percent",
-    "personal_status_and_sex",
-    "other_debtors_guarantors",
-    "present_residence_since",
-    "property",
-    "age_in_years",
-    "other_installment_plans",
-    "housing",
-    "number_of_existing_credits",
-    "job",
-    "number_of_dependents",
-    "telephone",
-    "foreign_worker",
-    "risk",
-]
+from src.core.constants import (
+    COLUMN_NAMES,
+    NUMERIC_COLUMNS,
+    CATEGORICAL_COLUMNS,
+    TARGET_COLUMN,
+    MODEL_NUMERIC_COLUMNS,
+    MODEL_CATEGORICAL_COLUMNS,
+    LOG_TRANSFORMER_FEATURES,
+    MODEL_FEATURES,
+    RISK_THRESHOLD_LOW,
+    RISK_THRESHOLD_HIGH,
+    RANDOM_STATE,
+    TEST_SIZE,
+    MODEL_PARAMS,
+)
 
-# ------------------------------------------------------------------------------
-# NUMERIC_COLUMNS
-# ------------------------------------------------------------------------------
-# Columns interpreted as numerical (continuous or discrete, suitable for scaler/transformations).
-NUMERIC_COLUMNS: List[str] = [
-    "duration_in_month",
-    "credit_amount",
-    "installment_rate_percent",
-    "present_residence_since",
-    "age_in_years",
-    "number_of_existing_credits",
-    "number_of_dependents",
-]
-
-# ------------------------------------------------------------------------------
-# CATEGORICAL_COLUMNS
-# ------------------------------------------------------------------------------
-# Columns interpreted as categorical or ordinal (suitable for encoding strategies).
-CATEGORICAL_COLUMNS: List[str] = [
-    "checking_account_status",
-    "credit_history",
-    "purpose",
-    "savings_account_bonds",
-    "present_employment_since",
-    "personal_status_and_sex",
-    "other_debtors_guarantors",
-    "property",
-    "other_installment_plans",
-    "housing",
-    "job",
-    "telephone",
-    "foreign_worker",
-]
-
-# ------------------------------------------------------------------------------
-# TARGET_COLUMN
-# ------------------------------------------------------------------------------
-# The label column to predict.
-TARGET_COLUMN: str = "risk"
-
-# ------------------------------------------------------------------------------
-# FEATURE SELECTION FOR MODELLING
-# ------------------------------------------------------------------------------
-# Model-selected numeric input features.
-MODEL_NUMERIC_COLUMNS: List[str] = [
-    "credit_amount",
-    "duration_in_month",
-    "age_in_years",
-    "installment_rate_percent",
-    "present_residence_since"
-]
-
-# Model-selected categorical input features.
-MODEL_CATEGORICAL_COLUMNS: List[str] = [
-    "checking_account_status",
-    "credit_history",
-    "purpose",
-    "property",
-    "savings_account_bonds",
-    "present_employment_since",
-]
-
-# Columns to apply log transformation during preprocessing.
-LOG_TRANSFORMER_FEATURES: List[str] = ["credit_amount"]
-
-# Complete ordered feature list for the model pipeline.
-MODEL_FEATURES: List[str] = MODEL_NUMERIC_COLUMNS + MODEL_CATEGORICAL_COLUMNS
-
-# ------------------------------------------------------------------------------
-# BUSINESS RULES (Risk Thresholds)
-# ------------------------------------------------------------------------------
-
-# If the risk probability is below 0.35, it is considered safe.
-RISK_THRESHOLD_LOW = 0.35
-
-# If the risk probability is above 0.75, it is considered dangerous.
-RISK_THRESHOLD_HIGH = 0.75
-
-# Between these values, the risk is "Medium".
-
-# ------------------------------------------------------------------------------
-# HYPERPARAMETERS
-# ------------------------------------------------------------------------------
-# Global random state for reproducibility.
-RANDOM_STATE = 42
-
-# Test split fraction.
-TEST_SIZE = 0.2
-
-# Default training hyperparameters (e.g., for RandomForestClassifier).
-MODEL_PARAMS = {
-    'n_estimators': 100,
-    'max_depth': 10,
-    'min_samples_split': 5,
-    'random_state': RANDOM_STATE,
-    'class_weight': 'balanced'
-}
-
-# ==============================================================================
-# 2. CONFIGURATION CLASS
-# ==============================================================================
 
 class Settings(BaseSettings):
     """
     Main configuration class for the Credit Risk ML Service.
 
-    Loads constants, environment-dependent settings, and directory paths.
-    Utilizes Pydantic for robust settings management and supports
-    dynamic resource resolution. Also provides convenient loading
-    of auxiliary mapping files.
+    Loads environment-dependent settings and provides access to
+    project paths and auxiliary mapping files.
+    Utilizes Pydantic for robust settings management.
     """
 
     # --------------------------------------------------------------------------
@@ -154,13 +38,11 @@ class Settings(BaseSettings):
     # --------------------------------------------------------------------------
     PROJECT_NAME: str = "Credit Risk ML Service"
 
-    # Data source endpoint (overridable by env var DATA_SOURCE_URL)
     DATA_SOURCE_URL: str = Field(
         default="http://dummy.url/for/dev",
         env="DATA_SOURCE_URL"
     )
 
-    # Dataset file naming conventions (relative to data directories)
     GERMAN_DATA_FILENAME: str = "german.data"
     CREDIT_DATA_FILENAME: str = "credit_data.data"
 
@@ -170,57 +52,48 @@ class Settings(BaseSettings):
     )
 
     # --------------------------------------------------------------------------
-    # Path accessors for primary data, models, and assets
+    # Path accessors
     # --------------------------------------------------------------------------
+    
+    def __init__(self, **kwargs):
+        """Initialize Settings and create Paths instance."""
+        super().__init__(**kwargs)
+        self._paths = get_project_paths()
 
-    @computed_field
+    @property
     def root_dir(self) -> Path:
-        """
-        Returns the absolute path to the project root directory.
-        """
-        return Path(__file__).parent.parent.parent
+        """Returns the absolute path to the project root directory."""
+        return self._paths.root_dir
 
     @property
     def data_dir(self) -> Path:
-        """
-        Path to the top-level data directory.
-        """
-        return self.root_dir / "data"
+        """Path to the top-level data directory."""
+        return self._paths.data_dir
 
     @property
     def raw_data_dir(self) -> Path:
-        """
-        Path to the directory containing original/raw datasets.
-        """
-        return self.data_dir / "raw"
+        """Path to the directory containing original/raw datasets."""
+        return self._paths.raw_data_dir
 
     @property
     def processed_data_dir(self) -> Path:
-        """
-        Path to the directory containing preprocessed datasets.
-        """
-        return self.data_dir / "processed"
+        """Path to the directory containing preprocessed datasets."""
+        return self._paths.processed_data_dir
 
     @property
     def models_prod_dir(self) -> Path:
-        """
-        Path to the directory containing production-ready models.
-        """
-        return self.root_dir / "models" / "prod"
+        """Path to the directory containing production-ready models."""
+        return self._paths.models_prod_dir
 
     @property
     def models_staging_dir(self) -> Path:
-        """
-        Path to the directory for models in staging/experimentation.
-        """
-        return self.root_dir / "models" / "staging"
+        """Path to the directory for models in staging/experimentation."""
+        return self._paths.models_staging_dir
 
     @property
     def assets_dir(self) -> Path:
-        """
-        Path to the assets directory (e.g., for mappings, configs, vocab).
-        """
-        return self.root_dir / "src" / "assets"
+        """Path to the assets directory (e.g., for mappings, configs, vocab)."""
+        return self._paths.assets_dir
 
     @property
     def mappings(self) -> Dict[str, Any]:
@@ -241,8 +114,9 @@ class Settings(BaseSettings):
             logger.error(f"[CONFIG] Failed to read {mappings_file}: {e}")
             return {}
 
+
 # ==============================================================================
-# 3. GLOBAL SETTINGS INSTANCE
+# GLOBAL SETTINGS INSTANCE
 # ==============================================================================
 # Instantiated configuration object for importing and referencing project-wide settings.
 settings = Settings()
