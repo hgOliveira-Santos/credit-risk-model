@@ -1,5 +1,5 @@
 import pandas as pd
-import logger
+from loguru import logger
 from fastapi import APIRouter, Depends, HTTPException
 
 from src.domain.schemas import PredictionInput, PredictionOutput
@@ -16,10 +16,10 @@ def get_risk_label(probability: float) -> str:
     else: 
         return "Bad"
 
-@router.post("/predict", responde_model=PredictionOutput)
+@router.post("/predict", response_model=PredictionOutput)
 def predict_credit_risk(
     input_data: PredictionInput,
-    model: Depends(get_model)
+    model = Depends(get_model)
 ): 
     try:
         input_df = pd.DataFrame([input_data.model_dump()])
