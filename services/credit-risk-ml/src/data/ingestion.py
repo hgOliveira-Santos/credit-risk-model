@@ -1,27 +1,55 @@
-import requests
 import zipfile
+import requests
 from io import BytesIO
 from pathlib import Path
+from typing import Protocol, runtime_checkable
 from loguru import logger
 
 from src.core.config import settings
 
 
-def download_dataset(overwrite: bool = False) -> Path:
+@runtime_checkable
+class FileDownloader(Protocol):
+    """Abstract interface for file downloading."""
+
+    def get_content(self, url: str) -> bytes: ...
+
+
+class RequestsFileDownloader:
+    """Downloader implementation using the requests library."""
+
+    def __init__(self, timeout: int = 60):
+        self.timeout = timeout
+
+    def get_content(self, url: str) -> bytes:
+        try:
+            response = requests.get(url, timeout=self.timeout)
+            response.raise_for_status()
+            return response.content
+        except requests.RequestException as e:
+            # Here we could raise a domain-specific exception for further decoupling if desired
+            logger.error(f"[DOWNLOADER] HTTP Request failed: {e}")
+            raise e
+
+
+def download_dataset(
+    overwrite: bool = False, downloader: FileDownloader = None
+) -> Path:
     """
-    Downloads the dataset from the UCI repository (ZIP), extracts the data file,
-    and saves it to the raw folder defined in the configuration.
+    Downloads the dataset from the repository (ZIP) and extracts it.
 
     Args:
-        overwrite (bool): If True, force download even if the file already exists.
-
-    Returns:
-        Path: Absolute path to the saved file.
+        overwrite: Force download even if file exists.
+        downloader: dependency injection for the download strategy.
+                    If None, uses default RequestsFileDownloader.
     """
-    # Set the target path: data/raw/credit_data.data
+    # "Default" Dependency Injection (Simplified Composition Root)
+    if downloader is None:
+        downloader = RequestsFileDownloader()
+
     output_path = settings.raw_data_dir / settings.CREDIT_DATA_FILENAME
 
-    # 1. Cache Check: If path exists, skip download unless overwrite is True
+    # 1. Cache Check
     if output_path.exists() and not overwrite:
         logger.info(f"[INGESTION] File already exists at: {output_path}")
         return output_path
@@ -29,15 +57,13 @@ def download_dataset(overwrite: bool = False) -> Path:
     logger.info(f"[INGESTION] Downloading data from {settings.DATA_SOURCE_URL} ...")
 
     try:
-        # Ensure the data/raw directory exists
         settings.raw_data_dir.mkdir(parents=True, exist_ok=True)
 
-        # 2. Download ZIP to memory
-        response = requests.get(settings.DATA_SOURCE_URL, timeout=60)
-        response.raise_for_status()
-        zip_buffer = BytesIO(response.content)
+        # 2. Download
+        content_bytes = downloader.get_content(settings.DATA_SOURCE_URL)
+        zip_buffer = BytesIO(content_bytes)
 
-        # 3. Extract and Save the data file
+        # 3. Extract and Save
         with zipfile.ZipFile(zip_buffer) as archive:
             if settings.GERMAN_DATA_FILENAME not in archive.namelist():
                 raise FileNotFoundError(
