@@ -18,20 +18,21 @@ def load_raw_data(filepath: Path) -> pd.DataFrame:
 
     Column names are applied as defined in configuration.
     """
-    if not filepath.exists():
-        raise FileNotFoundError(f"Data file not found at: {filepath}")
     try:
         df = pd.read_csv(
             filepath, sep=" ", header=None, names=COLUMN_NAMES, encoding="utf-8"
         )
         logger.info(f"[IO] Data loaded. Shape: {df.shape}")
         return df
+    except FileNotFoundError:
+        logger.error(f"[IO] File not found at: {filepath}")
+        raise
     except pd.errors.EmptyDataError:
         raise ValueError(f"No data found in file: {filepath}")
     except pd.errors.ParserError as e:
         raise ValueError(f"Error parsing CSV file: {e}")
     except Exception as e:
-        raise Exception(f"Error reading CSV file: {e}")
+        raise Exception(f"Unexpected error reading CSV file: {e}")
 
 
 def save_model(model: Any, filepath: Path) -> None:
@@ -40,10 +41,6 @@ def save_model(model: Any, filepath: Path) -> None:
     """
     try:
         filepath.parent.mkdir(parents=True, exist_ok=True)
-    except Exception as e:
-        logger.error(f"[IO] Error creating directory for model: {e}")
-        raise e
-    try:
         joblib.dump(model, filepath)
         logger.success(f"[IO] Model saved at: {filepath}")
     except Exception as e:
